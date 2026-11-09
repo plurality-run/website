@@ -1,0 +1,37 @@
+:root {
+  /* Approved Plurality identity. Keep artwork geometry independent of theme changes. */
+  --color-navy: #132b48;
+  --color-copper: #c58150;
+  --color-rose: #d5a0a6;
+  --color-paper: #f9f3e9;
+  --color-surface: #fefcfa;
+
+  --color-ink: var(--color-navy);
+  --color-muted: #53606b;
+  --color-line: #d9d2c8;
+  --color-rose-soft: #f2e4e1;
+  --color-on-dark: #f9f3e9;
+  --color-muted-on-dark: #d3dbe2;
+  --color-selection: #ead0ca;
+  --color-focus: var(--color-navy);
+
+  --font-body: 'Source Sans 3', 'Trebuchet MS', sans-serif;
+  --font-heading: var(--font-body);
+  --font-label: var(--font-body);
+  --text-small: 0.875rem;
+  --text-body: 1.125rem;
+  --text-lead: clamp(1.2rem, 1.7vw, 1.375rem);
+  --text-display: clamp(2.8rem, 5.8vw, 4.75rem);
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --space-6: 4.5rem;
+  --space-section: clamp(3.5rem, 7vw, 6rem);
+  --content-width: 75rem;
+  --page-gutter: clamp(1.25rem, 4vw, 3rem);
+  --radius-small: 0.25rem;
+  --motion-reveal: 600ms;
+}

@@ -1,0 +1,85 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import NetworkIllustration from '../components/NetworkIllustration.astro';
+import Arrow from '../components/Arrow.astro';
+import { site } from '../config/site';
+import { getPublishedUpdates } from '../lib/updates';
+
+const directions = [
+  {
+    number: '01', label: 'OPEN INFRASTRUCTURE', title: 'Make connections possible.',
+    text: 'Tools and protocols for agents and applications to communicate, coordinate, and keep a shared record of their work.',
+  },
+  {
+    number: '02', label: 'USEFUL NETWORK SERVICES', title: 'Less to operate yourself.',
+    text: 'Exploring hosted connectivity, service discovery, and durable access to history, so you can use the pieces that help.',
+  },
+  {
+    number: '03', label: 'PRACTICAL INTEGRATION', title: 'Start with what you have.',
+    text: 'Connecting existing systems around useful workflows. Human-led work, assisted by agents, rather than a whole new stack.',
+  },
+];
+const updates = await getPublishedUpdates();
+---
+<SiteLayout>
+  <section class="hero wrap" aria-labelledby="intro-heading">
+    <div class="hero-copy">
+      <p class="eyebrow">OPEN INFRASTRUCTURE. PRACTICAL SERVICES.</p>
+      <h1 id="intro-heading">Connect your agents.<br /><span>Keep the history.</span></h1>
+      <p class="lead">Plurality is developing open infrastructure and practical services for a web of people, agents, and applications.</p>
+      <a class="button" href="#direction">Meet Plurality <Arrow direction="down" /></a>
+      <p class="development-note"><span class="status-label">EARLY DEVELOPMENT</span> Building the foundations. More to come.</p>
+    </div>
+    <NetworkIllustration />
+  </section>
+
+  <section class="direction-section wrap" id="direction" aria-labelledby="direction-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">THE DIRECTION</p>
+        <h2 id="direction-heading">One useful connection.<br />Not a whole new stack.</h2>
+      </div>
+      <p>Keep the agents, applications, and workflows that work for you. We&rsquo;re exploring ways to connect them without putting everything under one provider.</p>
+    </div>
+    <div class="directions">
+      {directions.map(({ number, label, title, text }) => (
+        <article class="direction">
+          <div class="direction-label"><span class="direction-number">{number}</span><p class="eyebrow">{label}</p></div>
+          <h3>{title}</h3>
+          <p>{text}</p>
+        </article>
+      ))}
+    </div>
+    <p class="section-note">These are areas we&rsquo;re developing, not a catalogue of launched services.</p>
+  </section>
+
+  <section class="foundations-section" id="foundations" aria-labelledby="foundations-heading">
+    <div class="wrap foundations-content">
+      <div>
+        <p class="eyebrow">OPEN FOUNDATIONS</p>
+        <h2 id="foundations-heading">Starting with the<br />Synchronic Web.</h2>
+      </div>
+      <div class="foundations-copy">
+        <p>Our starting point is the Synchronic Web: an open foundation for independently operated systems to connect through persistent, verifiable histories.</p>
+        <p>Plurality is building on that foundation, not a compulsory hub for everyone who participates.</p>
+        <a class="text-link" href={site.links.syncWeb}>Explore the project on GitHub <Arrow /></a>
+      </div>
+    </div>
+  </section>
+
+  {updates.length > 0 && (
+    <section class="updates-section wrap" id="updates" aria-labelledby="updates-heading">
+      <p class="eyebrow">FROM PLURALITY</p>
+      <h2 id="updates-heading">Notes &amp; updates.</h2>
+      <ul class="updates-list">
+        {updates.map((update) => (
+          <li>
+            <time datetime={update.data.published.toISOString()}>{update.data.published.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</time>
+            <h3><a href={`/updates/${update.id}/`}>{update.data.title}</a></h3>
+            <p>{update.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</SiteLayout>

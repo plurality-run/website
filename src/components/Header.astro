@@ -1,0 +1,13 @@
+---
+import { site } from '../config/site';
+import Arrow from './Arrow.astro';
+---
+<header class="site-header wrap">
+  <a class="brand" href="/" aria-label="Plurality home">
+    <img class="brand-lockup" src="/brand/plurality-lockup.svg" width="225" height="78" alt="Plurality" fetchpriority="high" />
+  </a>
+  <nav aria-label="Main navigation">
+    {site.navigation.map(({ label, href }) => <a href={href}>{label}</a>)}
+    <a class="nav-external" href={site.links.github}>GitHub <Arrow /></a>
+  </nav>
+</header>
