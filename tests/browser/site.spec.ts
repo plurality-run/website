@@ -75,6 +75,17 @@ test('custom error page offers a working home link and is not indexable', async 
   await expect(page).toHaveURL('http://127.0.0.1:4321/');
 });
 
+test('Workers serves security headers and a real custom 404', async ({ request }) => {
+  test.skip(!process.env.TEST_WORKERS, 'Requires the local Workers emulator');
+  const home = await request.get('/');
+  expect(home.headers()['x-content-type-options']).toBe('nosniff');
+  expect(home.headers()['x-frame-options']).toBe('DENY');
+  expect(home.headers()['referrer-policy']).toBe('strict-origin-when-cross-origin');
+  const missing = await request.get('/this-route-does-not-exist/');
+  expect(missing.status()).toBe(404);
+  expect(await missing.text()).toContain('<h1>A connection<br>not quite made.</h1>');
+});
+
 test('homepage needs no client JavaScript or third-party requests', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();

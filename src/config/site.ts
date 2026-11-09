@@ -18,6 +18,7 @@ export const site = {
 } as const;
 
 // The main branch is production. Preview builds must not advertise themselves to search engines.
-export const isPreview = Boolean(
-  process.env.CF_PAGES_BRANCH && process.env.CF_PAGES_BRANCH !== 'main',
-);
+const buildBranch = process.env.WORKERS_CI_BRANCH || process.env.CF_PAGES_BRANCH;
+export const isPreview = buildBranch
+  ? buildBranch !== 'main'
+  : Boolean(process.env.WORKERS_CI);

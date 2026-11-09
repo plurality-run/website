@@ -16,11 +16,17 @@ test('Markdown publication and preview indexing work in real static builds', { t
     await symlink(resolve('node_modules'), join(scratch, 'node_modules'), 'dir');
     const fixture = join(scratch, 'src/content/updates/build-fixture.md');
     const body = (draft) => `---\ntitle: Publication test fixture\ndescription: Temporary build verification only.\npublished: 2000-01-01\nkind: news\ndraft: ${draft}\n---\n\n## A rendered Markdown heading\n\nContent fixture body.\n`;
-    const build = (branch = 'main') => execFileSync(
+    const build = (branch = 'main', platform = 'workers') => execFileSync(
       process.execPath, [resolve('node_modules/.bin/astro'), 'build'],
       {
         cwd: scratch,
-        env: { ...process.env, CF_PAGES_BRANCH: branch, ASTRO_TELEMETRY_DISABLED: '1', RAYON_NUM_THREADS: '2' },
+        env: {
+          ...process.env,
+          WORKERS_CI: platform === 'workers' ? '1' : '',
+          WORKERS_CI_BRANCH: platform === 'workers' ? branch : '',
+          CF_PAGES_BRANCH: platform === 'pages' ? branch : '',
+          ASTRO_TELEMETRY_DISABLED: '1', RAYON_NUM_THREADS: '2',
+        },
         encoding: 'utf8', timeout: 20_000, stdio: 'pipe',
       },
     );
@@ -43,6 +49,13 @@ test('Markdown publication and preview indexing work in real static builds', { t
     assert.match(await readFile(article, 'utf8'), /noindex, nofollow/);
     assert.equal(await readFile(join(scratch, 'dist/robots.txt'), 'utf8'), 'User-agent: *\nDisallow: /\n');
     assert.match(await html(), /rel="canonical" href="https:\/\/plurality.run\/"/);
+
+    // Missing CI branch metadata must not accidentally make a preview indexable.
+    build('');
+    assert.match(await html(), /name="robots" content="noindex, nofollow"/);
+
+    build('test/preview', 'pages');
+    assert.match(await html(), /name="robots" content="noindex, nofollow"/);
   } finally {
     await rm(scratch, { recursive: true, force: true });
   }

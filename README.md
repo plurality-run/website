@@ -74,22 +74,37 @@ The suite covers publication dates/drafts, a real Markdown publication build in 
 
 On a system with an existing compatible Chromium, set `CHROMIUM_EXECUTABLE_PATH`; optional `CHROMIUM_ARGS` is a JSON array of extra launch flags. On tightly constrained containers, bound CPU affinity/native build thread counts rather than increasing service/container limits. Browser dependencies and screenshots are development-only and are not published.
 
-## Cloudflare Pages
+## Cloudflare Workers Static Assets
 
-Connect **only this repository** through Cloudflare's GitHub integration, under the intended Cloudflare account. This is separate from any agent GitHub App.
+Use the current **Workers** Git integration, not the legacy Pages workflow. Connect **only this repository** under the intended Cloudflare account. This is separate from any agent GitHub App. The existing Worker is named `website`; its production hostname is `website.plurality-9f9.workers.dev`.
 
-| Setting | Value |
+| Setting (Worker Settings > Builds) | Value |
 | --- | --- |
 | Production branch | `main` |
 | Root directory | repository root |
 | Build command | `npm run check && npm run build` |
-| Build output directory | `dist` |
-| Node version | `24.18.0` via `NODE_VERSION` / `.node-version` |
-| Preview branches | enable the intended non-production branches |
+| Deploy command (production only) | `npx wrangler deploy` |
+| Preview command | `npx wrangler preview` |
+| Node version | `24.18.0` via `.node-version` (or `NODE_VERSION`) |
+| Branch control | Enable Preview Builds for non-production branches |
 
-No Cloudflare adapter, Pages Functions, API token, or production secret is required. `_headers` contains basic browser security headers applied by Pages; the local test server does not emulate those platform headers. Preview builds detect `CF_PAGES_BRANCH`, emit `noindex, nofollow`, and disallow crawlers. These are indexing hints, not access controls.
+Wrangler is pinned in devDependencies. `wrangler.jsonc` names the existing Worker and points Static Assets at `dist`, with custom 404 handling and an empty required `previews` block. No Worker script, Astro server adapter, runtime bindings, or application secrets are needed. Cloudflare's Git integration handles deployment authentication; do not commit a Cloudflare token. Static files are served without running application code.
 
-Review the `pages.dev` deployment before attaching `plurality.run`. This repository does not provision a Pages project or change DNS; connecting Git enables automatic deployments.
+**First preview before the initial merge:** `main` is currently README-only, so an initial production build from it is expected to fail. Do not add dummy code, change the production branch, or merge just to obtain a preview. Save the build/preview settings above, then push a new commit to `celie/initial-info-site` to trigger its preview. If a build already exists for that branch, retry that build after fixing the settings; retrying the old `main` build will still build `main`. Find the preview URL in the branch build details or GitHub PR comment. If there is a **Set up Worker Previews** banner, review the one-time switch before enabling the new workflow. Cloudflare currently labels Worker Previews open beta.
+
+Preview builds detect `WORKERS_CI_BRANCH`; any branch other than `main` emits `noindex, nofollow` and disallows crawlers. Workers CI with missing branch metadata also defaults to noindex. `CF_PAGES_BRANCH` remains supported for portable static builds. These are indexing hints, not access controls. Review the branch's preview URL, not the production `website.plurality-9f9.workers.dev` hostname. Canonicals still point to the intended production domain.
+
+For local Workers routing/header checks (no Cloudflare login or deployment):
+
+```sh
+npm run build
+npx wrangler deploy --dry-run
+npx wrangler dev --local
+# Exercise Workers headers and custom 404 routing without uploading:
+TEST_WORKERS=1 npx playwright test -g 'Workers serves'
+```
+
+`_headers` contains basic browser security headers supported by Workers Static Assets. The ordinary static test server does not emulate those headers; the local Workers emulator exercises them. An actual Cloudflare edge deployment must still be checked after setup. This repository does not change DNS or attach `plurality.run`; connecting Git enables automatic branch previews and, after human merge, production deployments.
 
 ## Publishing and recovery
 

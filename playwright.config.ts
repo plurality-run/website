@@ -18,10 +18,16 @@ export default defineConfig({
   },
   webServer: {
     // Exercise the portable static output, without keeping a framework server in memory.
-    command: 'npm run build && sirv dist --host 127.0.0.1 --port 4321',
+    command: process.env.TEST_WORKERS
+      ? 'npm run build && wrangler dev --local --ip 127.0.0.1 --port 4321'
+      : 'npm run build && sirv dist --host 127.0.0.1 --port 4321',
     url: 'http://127.0.0.1:4321',
     reuseExistingServer: false,
     timeout: 60_000,
-    env: { ASTRO_TELEMETRY_DISABLED: '1', RAYON_NUM_THREADS: '2' },
+    env: {
+      ASTRO_TELEMETRY_DISABLED: '1', RAYON_NUM_THREADS: '2',
+      WRANGLER_SEND_METRICS: 'false',
+      WORKERS_CI: '', WORKERS_CI_BRANCH: '', CF_PAGES_BRANCH: '',
+    },
   },
 });
