@@ -1,0 +1,32 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Arrow from '../../components/Arrow.astro';
+import { getPublishedUpdates } from '../../lib/updates';
+import { site } from '../../config/site';
+
+export async function getStaticPaths() {
+  return (await getPublishedUpdates()).map((update) => ({
+    params: { id: update.id },
+    props: { update },
+  }));
+}
+interface Props { update: CollectionEntry<'updates'> }
+const { update } = Astro.props;
+const { Content } = await render(update);
+const date = update.data.published.toLocaleDateString('en-US', {
+  year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+});
+---
+<SiteLayout title={`${update.data.title} | ${site.name}`} description={update.data.description}>
+  <article class="article wrap">
+    <a class="text-link" href="/#updates"><Arrow direction="left" /> All updates</a>
+    <header class="article-header">
+      <p class="eyebrow">{update.data.kind === 'news' ? 'NEWS' : 'A NOTE FROM PLURALITY'}</p>
+      <h1>{update.data.title}</h1>
+      <time datetime={update.data.published.toISOString()}>{date}</time>
+      <p class="lead">{update.data.description}</p>
+    </header>
+    <div class="prose"><Content /></div>
+  </article>
+</SiteLayout>
