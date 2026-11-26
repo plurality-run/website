@@ -12,7 +12,8 @@ for (const width of [320, 375, 768, 1280, 1440]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Connect your agents.Keep the history.');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     for (const img of await page.locator('img').all()) {
-      expect(await img.evaluate((element: HTMLImageElement) => element.complete && element.naturalWidth > 0)).toBe(true);
+      await img.scrollIntoViewIfNeeded();
+      await expect.poll(() => img.evaluate((element: HTMLImageElement) => element.complete && element.naturalWidth > 0)).toBe(true);
     }
     await page.getByRole('link', { name: 'Meet Plurality' }).click();
     await expect(page).toHaveURL(/#direction$/);
@@ -84,6 +85,13 @@ test('Workers serves security headers and a real custom 404', async ({ request }
   const missing = await request.get('/this-route-does-not-exist/');
   expect(missing.status()).toBe(404);
   expect(await missing.text()).toContain('<h1>A connection<br>not quite made.</h1>');
+});
+
+test('values appear in the agreed order before signup', async ({ page }) => {
+  await page.goto('/');
+  const values = page.getByRole('region', { name: 'Our values.' });
+  await expect(values.getByRole('heading', { level: 3 })).toHaveText(['Openness', 'Autonomy', 'Invention', 'Pluralism']);
+  await expect(page.locator('main > section').filter({ has: page.locator('#values-heading, #signup-heading') }).getByRole('heading', { level: 2 })).toHaveText(['Our values.', 'Get Plurality updates.']);
 });
 
 test('signup validates input and posts only to Buttondown without JavaScript', async ({ browser }) => {
