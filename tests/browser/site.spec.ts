@@ -86,6 +86,35 @@ test('Workers serves security headers and a real custom 404', async ({ request }
   expect(await missing.text()).toContain('<h1>A connection<br>not quite made.</h1>');
 });
 
+test('signup validates input and posts only to Buttondown without JavaScript', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    const endpoint = 'https://buttondown.com/api/emails/embed-subscribe/namdinh';
+    let received = 0;
+    await context.route('https://buttondown.com/**', async (route) => {
+      received++;
+      const request = route.request();
+      expect(request.url()).toBe(endpoint);
+      expect(request.method()).toBe('POST');
+      expect(Object.fromEntries(new URLSearchParams(request.postData() ?? ''))).toEqual({ email: 'test@example.com', embed: '1' });
+      await route.fulfill({ contentType: 'text/plain', body: 'Signup test intercepted locally' });
+    });
+    await page.goto('http://127.0.0.1:4321/');
+    const email = page.getByLabel('Email address');
+    const submit = page.getByRole('button', { name: 'Subscribe' });
+    await submit.click();
+    await expect(email).toBeFocused();
+    expect(received).toBe(0);
+    await email.fill('test@example.com');
+    await submit.click();
+    await expect(page.locator('body')).toContainText('Signup test intercepted locally');
+    expect(received).toBe(1);
+  } finally {
+    await context.close();
+  }
+});
+
 test('homepage needs no client JavaScript or third-party requests', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
