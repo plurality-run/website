@@ -12,8 +12,9 @@ try {
   const symbol = await readFile(asset('favicon.svg'), 'utf8');
   for (const [size, name] of [[32, 'favicon-32.png'], [180, 'apple-touch-icon.png']]) {
     await page.setViewportSize({ width: size, height: size });
-    await page.setContent(`<style>html,body{margin:0;width:100%;height:100%}svg{width:100%;height:100%;display:block}</style>${symbol}`);
-    await page.screenshot({ path: asset(name).pathname });
+    const touchIcon = name === 'apple-touch-icon.png';
+    await page.setContent(`<style>html,body{margin:0;width:100%;height:100%${touchIcon ? ';background:white' : ''}}svg{width:100%;height:100%;display:block}</style>${symbol}`);
+    await page.screenshot({ path: asset(name).pathname, omitBackground: !touchIcon });
   }
   const tokens = await readFile(new URL('src/styles/tokens.css', root), 'utf8');
   const logo = await readFile(asset('plurality-lockup.svg'), 'utf8');
