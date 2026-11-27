@@ -9,10 +9,10 @@ const browser = await chromium.launch({
 });
 try {
   const page = await browser.newPage({ deviceScaleFactor: 1, reducedMotion: 'reduce' });
-  const symbol = await readFile(asset('favicon.svg'), 'utf8');
   for (const [size, name] of [[32, 'favicon-32.png'], [180, 'apple-touch-icon.png']]) {
     await page.setViewportSize({ width: size, height: size });
     const touchIcon = name === 'apple-touch-icon.png';
+    const symbol = await readFile(asset(touchIcon ? 'plurality-symbol.svg' : 'favicon.svg'), 'utf8');
     await page.setContent(`<style>html,body{margin:0;width:100%;height:100%${touchIcon ? ';background:white' : ''}}svg{width:100%;height:100%;display:block}</style>${symbol}`);
     await page.screenshot({ path: asset(name).pathname, omitBackground: !touchIcon });
   }
